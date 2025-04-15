@@ -17,9 +17,9 @@ pokemon_list = ['abomasnow','abra','absol','accelgor','aegislash','aerodactyl','
                 'bounsweet','braixen','brambleghast','bramblin','braviary','breloom','brionne','bronzong',
                 'bronzor','brute-bonnet','bruxish','budew','buizel','bulbasaur','buneary','bunnelby',
                 'burmy','butterfree','buzzwole','cacnea','cacturne','calyrex','camerupt','capsakid',
-                'carbink','carkol','carnivine','carrocosta','carvanha','cascoon','caterpie','celebi',
+                'carbink','carkol','carnivine','carracosta','carvanha','cascoon','caterpie','celebi',
                 'celesteela','centiskorch','ceruledge','cetitan','cetoddle','chandelure','chansey',
-                'charadet','charizard','charjabug','charmannder','charmeleon','chatot','cherrim',
+                'charcadet','charizard','charjabug','charmannder','charmeleon','chatot','cherrim',
                 'cherubi','chesnaught','chespin','chewtle','chi-yu','chien-pao','chikorita','chimchar',
                 'chimecho','chinchou','chingling','cinccino','cinderace','clamperl','clauncher',
                 'clawtizer','claydol','cleffable','clefairy','cleffa','clobbopus','clodsire','cloyster',
@@ -34,10 +34,10 @@ pokemon_list = ['abomasnow','abra','absol','accelgor','aegislash','aerodactyl','
                 'dottler','doublade','dracovish','dracozolt','dragalge','dragapult','dragonair','dragonite',
                 'drakloak','drampa','drapion','dratini','drednaw','dreepy','drifblim','drifloon','drilbur',
                 'drizzile','drowzee','druddigon','dubwool','ducklett','dudunsparce','dugtrio','dunsparce',
-                'duosion','duralodon','durant','dusknoir','duskull','dustox','dwebble','eelektrik',
+                'duosion','duralodon','durant','dusclops','dusknoir','duskull','dustox','dwebble','eelektrik',
                 'eelektross','eevee','eiscue','ekans','eldegross','electabuzz','electrike','electrode',
-                'elekid','elgyem','emboar','emolga','empoleon','enamorus','entei','escavalier','espathra',
-                'espurr','eternatus','excadrill','exeggcute','exeggutor','exploud','falinks',"farfetched",
+                'elekid','elgyem','emboar','emolga','empoleon','enamorus-incarnate','entei','escavalier','espathra',
+                'espurr','eternatus','excadrill','exeggcute','exeggutor','exploud','falinks',"farfetchd",
                 'farigiraf','fearow','feebas','fennekin','feraligatr','ferroseed','ferrothorn','fezandipiti',
                 'fidough','finizen','finneon','flaffy','flabebe','flamigo','flapple','flareon','fletchinder',
                 'fletchling','flittle','floatzel','floatte','florogato','florges','flutter-mane','flygon',
@@ -105,7 +105,7 @@ pokemon_list = ['abomasnow','abra','absol','accelgor','aegislash','aerodactyl','
                 'squawkabilly','squirtle','stakataka','stantler','staraptor','staravia','starly','starmie','staryu',
                 'steelix','steenee','stonjourner','stoutland','stufful','stunfisk','stunky','sudowoodo','suicune',
                 'sunflora','surskit','swablu','swadloon','swalot','swampert','swanna','swellow','swirlix','swoobat',
-                'sylveon','tadbulb','tailow','talonflame','tandemaus','tangela','tangrwoth','tapu-bulu','tapu-fini',
+                'sylveon','tadbulb','tailow','talonflame','tandemaus','tangela','tangrowth','tapu-bulu','tapu-fini',
                 'tapu-koko','tapu-lele','tarountula','tatsugiri','tauros','teddiursa','tentacool','tentacruel','tepig',
                 'terapagos','terrakion','thievul','throh','thundurus','thwackey','timburr','ting-lu','tinkatink','tinkaton',
                 'tinkatuff','tirtouga','toedscool','toedscruel','togedemaru','togekiss','togepi','togetic','torchic',
@@ -138,6 +138,15 @@ def pok_search(name):
     else:
         print(f"Failed to retrieve data {response.status_code}")
         
+def dex_search(dex_number):
+    response = requests.get(f"https://pokeapi.co/api/v2/pokemon/{dex_number}/")
+    if response.status_code == 200:
+        data = response.json()
+        print(f"Name: {data['name']}")
+        print(f"Dex Number: {data['id']}")
+    else:
+        print("Pokémon not found.")    
+        
 def pok_moves(list):
     selected_pok = random.sample(pokemon_list,1)
     pokemon_moves = []
@@ -158,9 +167,8 @@ def pok_moves(list):
         else:
             print(f"Failed to retrieve data for {pokemon}")
     print("\nYour Pokémon moves are: ")
-    return pokemon_moves 
 
-
+    return pokemon_moves
 # Functions
 def random_pok(num):
     if num > len(pokemon_list):
@@ -200,9 +208,27 @@ def create_team(game_list):
     for pokemon in total_list:
         print(pokemon)
     return total_list 
-        
 
+ 
 
+def dex_num_gen(pokemon_list, num):
+    # Select 'num' random Pokémon from the list (with safety checks)
+    selected_pok = random.sample(pokemon_list, min(num, len(pokemon_list)))
+    dex_numbers = []
+    
+    for pokemon in selected_pok:
+        response = requests.get(f"{base_url}/pokemon/{pokemon.lower()}")
+        if response.status_code == 200:
+            data = response.json()
+            dex_numbers.append({
+                'dex_number': data['id']  # Directly get the Dex number
+            })
+        else:
+            print(f"Failed to retrieve data for {pokemon}")
+    
+    print(f"\nYour {len(dex_numbers)} Dex IDs are:")
+    print(dex_numbers)
+    
 
 def chain_game(game_list):  # Take game_list as argument
     score = 0
@@ -303,6 +329,8 @@ def chooser(high_score, total_games):  # Pass high_score and total_games
         time.sleep(0.5)
         print("(3) Moves mode: Generate 4 random moves for your Pokemon")
         time.sleep(0.5)
+        print("(4) Dex mode: Generate a number of random Dex IDs")
+        time.sleep(0.5)
         while True:
             try:
                 mode_f = int(input("Which mode do you want to use: "))
@@ -337,6 +365,27 @@ def chooser(high_score, total_games):  # Pass high_score and total_games
                 print("Invalid mode choice.")
         elif mode_f == 3:
             print(pok_moves(random.choice(pokemon_list)))
+        elif mode_f == 4:
+            print("(1) Single mode: Generate one Dex ID")
+            time.sleep(0.5)
+            print("(2) Triple mode: Generate 3 Dex ID")
+            time.sleep(0.5)
+            print("(3) Pentacle mode: Generate 5 Dex ID")
+            time.sleep(0.5)
+            print("(4) Chooser mode: Generate how many you want Dex ID")
+            time.sleep(0.5)
+            mode_b = int(input("Which mode do you want to use: "))
+            if mode_b == 1:
+                dex_num_gen(pokemon_list,1)
+            elif mode_b == 2:
+                dex_num_gen(pokemon_list,3)
+            elif mode_b == 3:
+                dex_num_gen(pokemon_list,5)
+            elif mode_b == 4:
+                dex_num = int(input("How many Dex IDs do you want to generate: "))
+                dex_num_gen(pokemon_list,dex_num)
+            else:
+                print("Wrong choice selected")
 
     elif mode_c == 2:
         total_games += 1
@@ -354,12 +403,14 @@ def chooser(high_score, total_games):  # Pass high_score and total_games
         time.sleep(0.5)
         print("(2) First letter mode: Find Pokemon by the first letter")
         time.sleep(0.5)
+        print("(3) Dex mode: Find Pokemon by its Dex ID")
+        time.sleep(0.5)
         while True:
             try:
                 waver = int(input("Which mode do you want to use: "))
                 break
             except ValueError:
-                print("Invalid input. Please enter a number (1 or 2).")
+                print("Invalid input. Please enter a number (1,2 or 3).")
                 time.sleep(1)  # Short delay to allow the user to see the error
                 continue  # Go back to the beginning of the loop
         if waver == 1:
@@ -368,6 +419,9 @@ def chooser(high_score, total_games):  # Pass high_score and total_games
         elif waver == 2:
             first_letter_to_find = input("Enter the first letter of a Pokémon:").lower()
             first_letter(first_letter_to_find)
+        elif waver == 3:
+            d_id = int(input("What Dex number do you want to search: "))
+            dex_search(d_id)
     elif mode_c == 4:
         create_team(game_list)
     else:
